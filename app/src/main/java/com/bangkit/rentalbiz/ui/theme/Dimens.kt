@@ -24,6 +24,7 @@ class Dimensions(
     val radius_8: Dp,
     val radius_12: Dp,
     val radius_16: Dp,
+    val radius_24: Dp,
 )
 
 val sw360Dimensions = Dimensions(
@@ -47,4 +48,5 @@ val sw360Dimensions = Dimensions(
     radius_8 = 8.dp,
     radius_12 = 12.dp,
     radius_16 = 16.dp,
+    radius_24 = 24.dp,
 )

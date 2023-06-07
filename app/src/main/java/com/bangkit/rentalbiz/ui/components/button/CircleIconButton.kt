@@ -42,6 +42,7 @@ fun CircleIconButton(
                 ButtonType.SECONDARY -> Shades0
                 ButtonType.SUCCESS -> Success400
                 ButtonType.ERROR -> Error400
+                ButtonType.ACCENT -> Primary400
             }
         )
     val buttonBorder = if (type == ButtonType.SECONDARY) BorderStroke(2.dp, Neutral100) else null

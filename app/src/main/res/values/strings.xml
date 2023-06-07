@@ -44,4 +44,19 @@
     <string name="city">Kota</string>
     <string name="Email">Email</string>
     <string name="password">Password</string>
+    <string name="product_not_found">Produk tidak ditemukan</string>
+    <string name="filter">Filter</string>
+    <string name="min">Min.</string>
+    <string name="max">Max.</string>
+    <string name="price_range">Rentang Harga</string>
+    <string name="location">Lokasi</string>
+    <string name="search_location">Cari Lokasi</string>
+    <string name="search">Cari</string>
+    <string name="Category">Kategori</string>
+    <string name="favorite_empty">Anda tidak mempunyai daftar favorit</string>
+    <string name="item_added">Barang berhasil ditambahkan</string>
+    <string name="add_item_failed">Gagal menambahkan barang</string>
+    <string name="cart_empty">Anda belum menambahkan barang</string>
+    <string name="cart_tab">Keranjang</string>
+    <string name="user_not_found">User tidak ditemukan</string>
 </resources>

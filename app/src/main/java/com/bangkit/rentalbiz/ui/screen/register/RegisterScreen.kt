@@ -1,10 +1,12 @@
 package com.bangkit.rentalbiz.ui.screen.register
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,6 +28,7 @@ import com.bangkit.rentalbiz.ui.components.button.ButtonState
 import com.bangkit.rentalbiz.ui.components.button.MyButton
 import com.bangkit.rentalbiz.ui.components.input.MyTextField
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
+import com.bangkit.rentalbiz.ui.navigation.Screen
 import com.bangkit.rentalbiz.ui.theme.AppTheme
 import com.bangkit.rentalbiz.ui.theme.Error400
 import com.bangkit.rentalbiz.ui.theme.Primary400
@@ -39,6 +42,7 @@ fun RegisterScreen(
 ) {
     val registerForm by viewModel.registerForm
     val uiState by viewModel.uiState.collectAsState()
+
     RegisterContent(
         modifier = modifier,
         registerForm = registerForm,
@@ -49,8 +53,14 @@ fun RegisterScreen(
         onPasswordUpdate = { viewModel.updateForm(password = it) },
         onCityUpdate = { viewModel.updateForm(city = it) },
         onAddressUpdate = { viewModel.updateForm(address = it) },
-        onRegisterClick = { viewModel.register() },
-        onLoginClick = { navController.popBackStack() }
+        onRegisterClick = {
+            viewModel.register(onRegisterComplete = {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.Register.route) { inclusive = true }
+                }
+            })
+        },
+        onLoginClick = { navController.popBackStack() },
     )
 
 }
@@ -146,9 +156,6 @@ fun RegisterContent(
                             color = Error400
                         )
                     }
-                    is UiState.Success -> {
-                        onLoginClick()
-                    }
                     else -> {}
                 }
             }
@@ -158,10 +165,7 @@ fun RegisterContent(
                     title = stringResource(R.string.register),
                     state = if (uiState == UiState.Loading) ButtonState.LOADING else ButtonState.ACTIVE,
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onRegisterClick()
-
-                    }
+                    onClick = { onRegisterClick() }
                 )
                 Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
                 LoginObject(
@@ -213,6 +217,7 @@ fun RegisterScreenPreview() {
             onCityUpdate = {},
             onAddressUpdate = {},
             onRegisterClick = { /*TODO*/ },
-            onLoginClick = { /*TODO*/ })
+            onLoginClick = { /*TODO*/ },
+        )
     }
 }

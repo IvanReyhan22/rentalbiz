@@ -57,7 +57,7 @@ fun VerticalProductCard(
                     .clip(RoundedCornerShape(AppTheme.dimens.radius_8))
             )
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_8))
-            Paragraph(title = title, type = ParagraphType.MEDIUM, fontWeight = FontWeight.Bold)
+            Paragraph(title = title, type = ParagraphType.MEDIUM, fontWeight = FontWeight.Bold, modifier = Modifier.height(AppTheme.dimens.spacing_40))
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_8))
             DetailInfo(location = location, rating = rating)
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_8))

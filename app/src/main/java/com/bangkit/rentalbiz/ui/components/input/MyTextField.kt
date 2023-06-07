@@ -27,6 +27,7 @@ fun MyTextField(
     maxLines: Int = 1,
     singleLine: Boolean = true,
     isPassword: Boolean = false,
+    leadingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     modifier: Modifier = Modifier
 ) {
@@ -55,6 +56,7 @@ fun MyTextField(
             placeholder = {
                 Paragraph(title = placeholder, type = ParagraphType.MEDIUM, color = Neutral500)
             },
+            leadingIcon = leadingIcon,
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = keyboardOptions,
             singleLine = singleLine,

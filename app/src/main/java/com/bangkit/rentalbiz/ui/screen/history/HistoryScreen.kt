@@ -42,7 +42,9 @@ fun HistoryScreen(
                         .background(color = Shades0)
                 ) {
 
-                    TopBar(onFavoriteClick = {})
+                    TopBar(onFavoriteClick = {
+                        navController.navigate(Screen.Favorite.route)
+                    })
                 }
             }
         }
@@ -59,16 +61,18 @@ fun HistoryScreen(
             ) {
                 items(DummyProductData.productList) { product ->
                     HorizontalProductCard(
-                        imageUrl = product.image,
-                        title = product.name,
-                        price = product.price,
-                        location = product.location,
-                        rating = product.rating,
+                        imageUrl = product.imageUrl.toString(),
+                        title = product.nama.toString(),
+                        price = product.harga.toString(),
+                        location = product.city.toString(),
+                        rating = 4.5,
                         status = "Selesai",
                         type = ProductCardType.HISTORY,
                         onClick = {
                             navController.navigate(Screen.DetailProduct.route)
-                        }
+                        },
+                        onFavoriteClick = {},
+                        rented = "10"
                     )
                 }
             }

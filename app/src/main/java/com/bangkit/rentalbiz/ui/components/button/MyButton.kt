@@ -48,6 +48,7 @@ fun MyButton(
                 ButtonType.SECONDARY -> Shades0
                 ButtonType.SUCCESS -> Success400
                 ButtonType.ERROR -> Error400
+                ButtonType.ACCENT -> Primary400
             }
         )
     val buttonBorder = if (type == ButtonType.SECONDARY) BorderStroke(2.dp, Neutral100) else null
@@ -78,7 +79,9 @@ fun MyButton(
     }
 
     Button(
-        onClick = { onClick() },
+        onClick = {
+            if (state == ButtonState.ACTIVE) onClick()
+        },
         colors = buttonColor,
         shape = RoundedCornerShape(12.dp),
         border = buttonBorder,
@@ -126,6 +129,8 @@ fun MyButtonPreview() {
             MyButton("Click Me", type = ButtonType.SUCCESS, onClick = {})
             Spacer(modifier = Modifier.height(8.dp))
             MyButton("Click Me", type = ButtonType.ERROR, onClick = {})
+            Spacer(modifier = Modifier.height(8.dp))
+            MyButton("Click Me", type = ButtonType.ACCENT, onClick = {})
             Spacer(modifier = Modifier.height(8.dp))
             MyButton(
                 "Click Me",

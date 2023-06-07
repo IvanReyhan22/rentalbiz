@@ -1,5 +1,6 @@
 package com.bangkit.rentalbiz.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -8,25 +9,31 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.bangkit.rentalbiz.R
 import com.bangkit.rentalbiz.ui.common.ParagraphType
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
 import com.bangkit.rentalbiz.ui.navigation.NavigationItem
 import com.bangkit.rentalbiz.ui.navigation.Screen
-import com.bangkit.rentalbiz.ui.screen.Favorite.FavoriteScreen
+import com.bangkit.rentalbiz.ui.screen.favorite.FavoriteScreen
 import com.bangkit.rentalbiz.ui.screen.GreetingScreen
 import com.bangkit.rentalbiz.ui.screen.OnBoardingScreen
+import com.bangkit.rentalbiz.ui.screen.cart.CartScreen
 import com.bangkit.rentalbiz.ui.screen.detail.DetailProductScreen
 import com.bangkit.rentalbiz.ui.screen.history.HistoryScreen
 import com.bangkit.rentalbiz.ui.screen.home.HomeScreen
@@ -37,6 +44,7 @@ import com.bangkit.rentalbiz.ui.theme.Neutral500
 import com.bangkit.rentalbiz.ui.theme.Neutral600
 import com.bangkit.rentalbiz.ui.theme.Primary400
 import com.bangkit.rentalbiz.ui.theme.Shades0
+import com.bangkit.rentalbiz.utils.UserPreference
 
 
 @Composable
@@ -44,8 +52,11 @@ fun RentalBizApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val userPreference = UserPreference(context.current)
+    val isFirstTime = userPreference.getIsFirstTime()
 
     val bottomNavScreen = listOf(
         Screen.Home.route,
@@ -53,15 +64,20 @@ fun RentalBizApp(
         Screen.Favorite.route,
         Screen.Profile.route
     )
+
+    var showBottomNav = remember { mutableStateOf(true) }
+
     Scaffold(
         bottomBar = {
-            if (bottomNavScreen.contains(currentRoute)) BottomBar(navController)
+            if (bottomNavScreen.contains(currentRoute) && showBottomNav.value) {
+                BottomBar(navController)
+            }
         },
         modifier = modifier
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Screen.OnBoarding.route,
+            startDestination = if (isFirstTime) Screen.OnBoarding.route else Screen.Login.route,
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Screen.OnBoarding.route) {
@@ -77,10 +93,23 @@ fun RentalBizApp(
                 GreetingScreen(navController = navController)
             }
             composable(Screen.Home.route) {
-                HomeScreen(navController = navController)
+                HomeScreen(
+                    navController = navController,
+                    toggleBottomNav = {
+                        showBottomNav.value = it
+                    })
             }
-            composable(Screen.DetailProduct.route) {
-                DetailProductScreen(navController = navController)
+            composable(
+                route = Screen.DetailProduct.route,
+                arguments = listOf(navArgument("productId") {
+                    type = NavType.StringType
+                })
+            ) {
+                val productId = it.arguments?.getString("productId")
+                DetailProductScreen(navController = navController, productId = productId.toString())
+            }
+            composable(Screen.Cart.route) {
+                CartScreen(navController = navController)
             }
             composable(Screen.History.route) {
                 HistoryScreen(navController = navController)

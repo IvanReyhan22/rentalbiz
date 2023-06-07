@@ -42,13 +42,37 @@ fun LoginScreen(
 ) {
     val loginForm by viewModel.loginForm
     val uiState by viewModel.uiState.collectAsState()
-    LoginContent(
-        uiState = uiState,
-        loginForm = loginForm,
-        onEmailUpdate = { viewModel.updateForm(email = it) },
-        onPasswordUpdate = { viewModel.updateForm(password = it) },
-        onLoginClick = { viewModel.login() },
-        onRegisterClick = { navController.navigate(Screen.Register.route) })
+    val isLoggedIn by viewModel.isLoggedIn
+
+    if (isLoggedIn) {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(navController.graph.id) { inclusive = true }
+        }
+    } else {
+        LoginContent(
+            modifier = modifier,
+            uiState = uiState,
+            loginForm = loginForm,
+            onEmailUpdate = { viewModel.updateForm(email = it) },
+            onPasswordUpdate = { viewModel.updateForm(password = it) },
+            onLoginClick = {
+                viewModel.login(
+                    onSignInComplete = {
+                        navController.navigate(Screen.Greeting.route) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
+                    },
+                )
+            },
+            onRegisterClick = {
+                navController.navigate(Screen.Register.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            },
+        )
+    }
+
+
 }
 
 @Composable
@@ -96,11 +120,11 @@ fun LoginContent(
                 onValueChange = { onPasswordUpdate(it) },
                 modifier = Modifier.fillMaxWidth()
             )
-            when (val currentState = uiState) {
+            when (uiState) {
                 is UiState.Error -> {
                     Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
                     Paragraph(
-                        title = currentState.errorMessage,
+                        title = uiState.errorMessage,
                         type = ParagraphType.MEDIUM,
                         fontWeight = FontWeight.Normal,
                         color = Error400
@@ -161,6 +185,7 @@ fun LoginScreenPreview(
             onEmailUpdate = {},
             onPasswordUpdate = {},
             onLoginClick = { /*TODO*/ },
-            onRegisterClick = { /*TODO*/ })
+            onRegisterClick = { /*TODO*/ },
+        )
     }
 }

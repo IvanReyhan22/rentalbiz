@@ -1,5 +1,6 @@
 package com.bangkit.rentalbiz.ui.screen.detail
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,28 +8,26 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.bangkit.rentalbiz.R
-import com.bangkit.rentalbiz.dummy.DummyProductData
-import com.bangkit.rentalbiz.ui.common.ButtonSize
-import com.bangkit.rentalbiz.ui.common.ButtonType
-import com.bangkit.rentalbiz.ui.common.HeadingType
-import com.bangkit.rentalbiz.ui.common.ParagraphType
+import com.bangkit.rentalbiz.data.remote.response.Product
+import com.bangkit.rentalbiz.ui.common.*
 import com.bangkit.rentalbiz.ui.components.button.CircleIconButton
 import com.bangkit.rentalbiz.ui.components.button.MyButton
 import com.bangkit.rentalbiz.ui.components.button.RoundedIconButton
@@ -37,22 +36,105 @@ import com.bangkit.rentalbiz.ui.components.modal.ContactBottomSheetModal
 import com.bangkit.rentalbiz.ui.components.text.Heading
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
 import com.bangkit.rentalbiz.ui.theme.*
-import kotlinx.coroutines.launch
+import com.talhafaki.composablesweettoast.util.SweetToastUtil.SweetError
+import com.talhafaki.composablesweettoast.util.SweetToastUtil.SweetSuccess
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DetailProductScreen(
+    productId: String,
     navController: NavController,
+    viewModel: DetailProductScreenViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
-    val data = DummyProductData.productList[0]
-
-    val coroutineScope = rememberCoroutineScope()
+    var openDialogSuccess by remember { mutableStateOf(false) }
+    var openDialogError by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsState()
+    val isFavorite by viewModel.isFavorite
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded },
     )
 
+    DisposableEffect(Unit){
+        viewModel.getProduct(productId = productId)
+        viewModel.checkIsFavorite(productId = productId)
+
+        onDispose {
+            // Cleanup code (if needed)
+        }
+    }
+
+    when (uiState) {
+        is UiState.Loading -> {
+            ScreenState(onBackClick = { }, isLoading = true)
+        }
+        is UiState.Error -> {
+            ScreenState(onBackClick = { }, isLoading = false)
+        }
+        is UiState.Success -> {
+            val data = (uiState as UiState.Success<Product>).data
+            DetailContent(
+                modifier = modifier,
+                product = data,
+                sheetState = sheetState,
+                isFavorite = isFavorite,
+                onLoveClick = { viewModel.toggleFavorite(product = data) },
+                onBackClick = { navController.popBackStack() },
+                onCartClick = {
+                    viewModel.addToCart(it, onSuccess = {
+                        openDialogSuccess = true
+                    }, onFailed = {
+                        openDialogError = true
+                    })
+                },
+                onBuyClick = {}
+            )
+        }
+        else -> {
+            /* Do Nothing */
+        }
+    }
+
+    if (openDialogSuccess) {
+        SweetSuccess(
+            message = stringResource(id = R.string.item_added),
+            duration = Toast.LENGTH_SHORT,
+            padding = PaddingValues(
+                vertical = AppTheme.dimens.spacing_4,
+                horizontal = AppTheme.dimens.spacing_16
+            ),
+            contentAlignment = Alignment.BottomCenter
+        )
+        openDialogSuccess = false
+    }
+
+    if (openDialogError) {
+        SweetError(
+            message = stringResource(R.string.add_item_failed),
+            duration = Toast.LENGTH_SHORT,
+            padding = PaddingValues(
+                vertical = AppTheme.dimens.spacing_4,
+                horizontal = AppTheme.dimens.spacing_16
+            ),
+            contentAlignment = Alignment.BottomCenter
+        )
+        openDialogError = false
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun DetailContent(
+    product: Product,
+    sheetState: ModalBottomSheetState,
+    isFavorite: Boolean,
+    onBackClick: () -> Unit,
+    onLoveClick: () -> Unit,
+    onCartClick: (Product) -> Unit,
+    onBuyClick: (Product) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     ModalBottomSheetLayout(
         sheetState = sheetState,
         sheetContent = { ContactBottomSheetModal(title = "String") },
@@ -64,7 +146,11 @@ fun DetailProductScreen(
             .fillMaxWidth()
     ) {
         Scaffold(
-            bottomBar = { DetailBottomBar() }
+            bottomBar = {
+                DetailBottomBar(
+                    onCartClick = { onCartClick(product) },
+                    onBuyClick = { onBuyClick(product) })
+            }
         ) { paddingValues ->
             Column(
                 modifier = modifier
@@ -74,82 +160,50 @@ fun DetailProductScreen(
                     .fillMaxSize()
             ) {
                 DetailHead(
-                    onBackClick = {navController.popBackStack()},
-                    onLoveClick = {}
+                    image = product.imageUrl.toString(),
+                    isFavorite = isFavorite,
+                    onBackClick = { onBackClick() },
+                    onLoveClick = { onLoveClick() }
                 )
                 Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_24))
                 ProductInfo(
-                    title = "Cannon 5D Mark IV",
-                    price = "200000",
+                    title = product.nama.toString(),
+                    price = product.harga.toString(),
                     rating = 4.5
                 )
                 Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_24))
                 Box(modifier = Modifier.padding(horizontal = AppTheme.dimens.spacing_24)) {
                     StoreCard(
                         name = "ngalamstore",
-                        location = "Jl. Chocolate 12,  Malang",
-                        onChatClick = {
-                            coroutineScope.launch {
-                                if (sheetState.isVisible) sheetState.hide()
-                                else sheetState.show()
-                            }
-                        },
+                        isChat = false,
+                        location = product.city.toString(),
+                        onChatClick = {},
                     )
                 }
                 Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_24))
-                ProductDetialDescription(
-                    description = data.description,
-                    requirenment = data.requirenment
+                ProductDetailDescription(
+                    description = product.deskripsi.toString(),
+                    requirenment = product.persyaratan.toString()
                 )
                 Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_24))
                 CheckAvailability()
             }
         }
-//        ModalBottomSheetLayout(
-//            sheetState = sheetState,
-//            sheetContent = { BottomSheet() },
-//            modifier = Modifier.fillMaxSize()
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(top = 24.dp)
-//                    .padding(horizontal = 24.dp),
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                Text(
-//                    text = "Welcome to bottom sheet playground!",
-//                    modifier = Modifier.fillMaxWidth(),
-//                    style = MaterialTheme.typography.h4,
-//                    textAlign = TextAlign.Center
-//                )
-//                Spacer(modifier = Modifier.height(32.dp))
-//                Button(
-//                    onClick = {
-//                        coroutineScope.launch {
-//                            if (sheetState.isVisible) sheetState.hide()
-//                            else sheetState.show()
-//                        }
-//                    }
-//                ) {
-//                    Text(text = "Click to show bottom sheet")
-//                }
-//            }
-//        }
-    }
 
+    }
 }
 
 @Composable
 fun DetailHead(
+    image: String,
+    isFavorite: Boolean,
     onBackClick: () -> Unit,
     onLoveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val data = DummyProductData.productList[0]
     Box(modifier = modifier) {
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(data.image).crossfade(true)
+            model = ImageRequest.Builder(LocalContext.current).data(image).crossfade(true)
                 .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -172,7 +226,7 @@ fun DetailHead(
 
             CircleIconButton(
                 icon = painterResource(id = R.drawable.ic_outline_heart),
-                type = ButtonType.SECONDARY,
+                type = if (isFavorite) ButtonType.ERROR else ButtonType.SECONDARY,
                 size = ButtonSize.LARGE,
                 onClick = { onLoveClick() })
         }
@@ -228,7 +282,7 @@ fun ProductRating(rating: Double, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProductDetialDescription(
+fun ProductDetailDescription(
     description: String,
     requirenment: String,
     modifier: Modifier = Modifier
@@ -274,7 +328,11 @@ fun CheckAvailability(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun DetailBottomBar(modifier: Modifier = Modifier) {
+private fun DetailBottomBar(
+    onCartClick: () -> Unit,
+    onBuyClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Surface(elevation = AppTheme.dimens.spacing_8) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -283,31 +341,121 @@ private fun DetailBottomBar(modifier: Modifier = Modifier) {
                 .background(Shades0)
                 .padding(
                     horizontal = AppTheme.dimens.spacing_24,
-                    vertical = AppTheme.dimens.spacing_8
+                    vertical = AppTheme.dimens.spacing_12
                 )
         ) {
             RoundedIconButton(
                 icon = painterResource(id = R.drawable.ic_shopping_cart),
                 size = ButtonSize.LARGE,
                 type = ButtonType.SECONDARY,
-                onClick = { /*TODO*/ },
+                onClick = { onCartClick() },
             )
             Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_16))
             MyButton(
                 title = stringResource(R.string.rent),
                 size = ButtonSize.LARGE,
-                onClick = { /*TODO*/ },
+                onClick = { onBuyClick() },
                 modifier = Modifier.weight(1F)
             )
         }
     }
 }
 
+@Composable
+fun ScreenState(
+    isLoading: Boolean,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxSize()) {
+        Box(modifier = modifier) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .background(Neutral100)
+                ) {}
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(AppTheme.dimens.spacing_24)
+                    .fillMaxWidth()
+            ) {
+                RoundedIconButton(
+                    icon = painterResource(id = R.drawable.ic_arrow_left),
+                    type = ButtonType.SECONDARY,
+                    size = ButtonSize.LARGE,
+                    onClick = { onBackClick() })
+
+                CircleIconButton(
+                    icon = painterResource(id = R.drawable.ic_outline_heart),
+                    type = ButtonType.SECONDARY,
+                    size = ButtonSize.LARGE,
+                    onClick = { })
+            }
+        }
+        if (isLoading) {
+            Box(
+                contentAlignment = Alignment.Center, modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1F)
+            ) {
+                CircularProgressIndicator(
+                    color = Primary400,
+                    strokeWidth = AppTheme.dimens.spacing_4,
+                    modifier = Modifier.size(AppTheme.dimens.spacing_48)
+                )
+            }
+        } else {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1F)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_outline_warning),
+                    contentDescription = "Warning Icon",
+                    contentScale = ContentScale.Fit,
+                    colorFilter = ColorFilter.tint(Neutral500),
+                    modifier = Modifier.size(AppTheme.dimens.spacing_48)
+                )
+                Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
+                Heading(
+                    title = stringResource(id = R.string.connection_error),
+                    type = HeadingType.H5,
+                    textAlign = TextAlign.Center,
+                    color = Neutral500,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
 @Preview(showBackground = true, device = Devices.PIXEL)
 @Composable
 fun DetailProductPreview(
 ) {
     RentalBizTheme {
-        DetailProductScreen(navController = rememberNavController())
+        val data = Product("", 0, "", "", "", 0)
+        val sheetState = rememberModalBottomSheetState(
+            initialValue = ModalBottomSheetValue.Hidden,
+            confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded },
+        )
+
+        DetailContent(
+            product = data,
+            sheetState = sheetState,
+            isFavorite = false,
+            onLoveClick = { /*TODO*/ },
+            onBackClick = { /*TODO*/ },
+            onCartClick = {},
+            onBuyClick = {}
+        )
     }
 }

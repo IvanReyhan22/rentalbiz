@@ -48,9 +48,8 @@ class RegisterScreenViewModel @Inject constructor(
         _registerForm.value = RegisterForm(name, phoneNumber, email, password, address, city)
     }
 
-    fun register() {
+    fun register(onRegisterComplete: () -> Unit) {
         setLoading()
-
         if (hasEmptyValue()) {
             _uiState.value = UiState.Error(context.getString(R.string.error_empty_field))
             return
@@ -74,6 +73,7 @@ class RegisterScreenViewModel @Inject constructor(
                         UiState.Error(response.error)
                     }
                     response != null -> { // not null
+                        onRegisterComplete()
                         UiState.Success(response.message.toString())
                     }
                     else -> { // other error message

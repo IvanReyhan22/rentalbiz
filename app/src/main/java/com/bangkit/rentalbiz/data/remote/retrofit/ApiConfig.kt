@@ -18,20 +18,19 @@ class ApiConfig {
                 HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE)
             }
 
-//            val authInterceptor = Interceptor { chain ->
-//                val req = chain.request()
-//                val userPreference = UserPreference(context)
-//                val token = ""
-//                val token = userPreference.getAuthorizationToken()
-//                val requestHeaders = req.newBuilder()
-//                    .addHeader("Authorization", "Bearer $token")
-//                    .build()
-//                chain.proceed(requestHeaders)
-//            }
+            val authInterceptor = Interceptor { chain ->
+                val req = chain.request()
+                val userPreference = UserPreference(context)
+                val token = userPreference.getAuthorizationToken()
+                val requestHeaders = req.newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
+                chain.proceed(requestHeaders)
+            }
 
             val client = OkHttpClient
                 .Builder()
-//                .addInterceptor(authInterceptor)
+                .addInterceptor(authInterceptor)
                 .addInterceptor(loggingInterceptor).build()
             val retrofit = Retrofit.Builder()
                 .baseUrl("https://rentalbiz-api-y47i5k3gga-de.a.run.app/")

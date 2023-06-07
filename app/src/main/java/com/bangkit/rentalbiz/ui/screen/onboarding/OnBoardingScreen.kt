@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -14,15 +16,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.bangkit.rentalbiz.R
 import com.bangkit.rentalbiz.ui.common.HeadingType
 import com.bangkit.rentalbiz.ui.common.ParagraphType
+import com.bangkit.rentalbiz.ui.common.UiState
+import com.bangkit.rentalbiz.ui.components.button.MyButton
 import com.bangkit.rentalbiz.ui.components.text.Heading
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
-import com.bangkit.rentalbiz.ui.components.button.MyButton
 import com.bangkit.rentalbiz.ui.navigation.Screen
+import com.bangkit.rentalbiz.ui.screen.onboarding.OnBoardingViewModel
 import com.bangkit.rentalbiz.ui.theme.AppTheme
 import com.bangkit.rentalbiz.ui.theme.Primary400
 import com.bangkit.rentalbiz.ui.theme.RentalBizTheme
@@ -31,7 +35,32 @@ import com.bangkit.rentalbiz.ui.theme.Shades90
 @Composable
 fun OnBoardingScreen(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    viewModel: OnBoardingViewModel = hiltViewModel()
+) {
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    when (uiState) {
+        is UiState.Success -> {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            }
+        }
+        else -> OnBoardingContent(
+            modifier = modifier,
+            onLoginClick = { navController.navigate(Screen.Login.route) },
+            onRegisterClick = { navController.navigate(Screen.Register.route) },
+        )
+    }
+}
+
+
+@Composable
+fun OnBoardingContent(
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
@@ -78,13 +107,9 @@ fun OnBoardingScreen(
             MyButton(
                 title = stringResource(R.string.login),
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { navController.navigate(Screen.Login.route) })
+                onClick = { onLoginClick() })
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
-            RegisterObject(
-                onClick = {
-                    navController.navigate(Screen.Register.route)
-                }
-            )
+            RegisterObject(onClick = { onRegisterClick() })
         }
     }
 }
@@ -120,6 +145,6 @@ fun RegisterObject(
 @Composable
 fun OnBoardingScreenPreview() {
     RentalBizTheme {
-        OnBoardingScreen(navController = rememberNavController())
+        OnBoardingContent(onLoginClick = { /*TODO*/ }, onRegisterClick = { /*TODO*/ })
     }
 }

@@ -24,7 +24,6 @@ import com.bangkit.rentalbiz.ui.common.ButtonSize
 import com.bangkit.rentalbiz.ui.common.ButtonType
 import com.bangkit.rentalbiz.ui.common.ParagraphType
 import com.bangkit.rentalbiz.ui.components.button.CircleIconButton
-import com.bangkit.rentalbiz.ui.components.button.MyButton
 import com.bangkit.rentalbiz.ui.components.button.RoundedIconButton
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
 import com.bangkit.rentalbiz.ui.theme.*
@@ -38,18 +37,23 @@ enum class ProductCardType {
 
 @Composable
 fun HorizontalProductCard(
-    onClick: () -> Unit,
     imageUrl: String,
     title: String,
     location: String,
     rating: Double,
     price: String,
     status: String,
-    isFavorite:Boolean = false,
+    itemCount: Int = 1,
+    rented: String,
+    isFavorite: Boolean = false,
     type: Enum<ProductCardType> = ProductCardType.NORMAL,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit ={},
+    onZeroCount: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var itemCount by remember { mutableStateOf(1) }
+    var itemCount by remember { mutableStateOf(itemCount) }
+
     Box(
         modifier = modifier
             .background(
@@ -65,7 +69,7 @@ fun HorizontalProductCard(
             .clickable { onClick() }
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = if (type == ProductCardType.COUNTER) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
         ) {
@@ -79,44 +83,51 @@ fun HorizontalProductCard(
                     .clip(RoundedCornerShape(AppTheme.dimens.radius_8))
             )
             Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_8))
-            ProducDetail(
+            ProductDetail(
                 title = title,
                 location = location,
                 price = price,
                 rating = rating,
                 type = type,
                 isFavorite = isFavorite,
-                modifier = Modifier.weight(1F)
+                rented = rented,
+                itemCount = itemCount,
+                onFavoriteClick = { onFavoriteClick() },
+                modifier = Modifier.weight(1F),
+                onClickPlus = { itemCount++ },
+                onClickMinus = {
+                    if (itemCount <= 1) {
+                        onZeroCount()
+                    } else {
+                        itemCount--
+                    }
+                }
             )
 
             if (type == ProductCardType.HISTORY) {
                 Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_8))
-                MyButton(
-                    title = status,
-                    size = ButtonSize.SMALL,
+                CircleIconButton(icon = painterResource(id = R.drawable.ic_check),
+                    size = ButtonSize.MEDIUM,
                     type = ButtonType.SUCCESS,
                     onClick = { /*TODO*/ })
-            }
-
-            if (type == ProductCardType.COUNTER) {
-                Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_8))
-                Counter(
-                    itemCount = itemCount,
-                    onClickPlus = { itemCount++ },
-                    onClickMinus = { itemCount-- })
             }
         }
     }
 }
 
 @Composable
-fun ProducDetail(
+fun ProductDetail(
     title: String,
     location: String,
     price: String,
     rating: Double,
-    isFavorite:Boolean = false,
+    rented: String,
+    itemCount: Int,
+    isFavorite: Boolean = false,
     type: Enum<ProductCardType>,
+    onFavoriteClick: () -> Unit,
+    onClickPlus: () -> Unit,
+    onClickMinus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -130,8 +141,8 @@ fun ProducDetail(
                 CircleIconButton(
                     icon = painterResource(id = R.drawable.ic_outline_heart),
                     size = ButtonSize.MEDIUM,
-                    type = if(isFavorite) ButtonType.ERROR else ButtonType.SECONDARY,
-                    onClick = { /*TODO*/ },
+                    type = if (isFavorite) ButtonType.ERROR else ButtonType.SECONDARY,
+                    onClick = { onFavoriteClick() },
                 )
             }
         }
@@ -139,19 +150,31 @@ fun ProducDetail(
         LocationAndRating(location = location, rating = rating)
         Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_4))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier) {
-            Paragraph(
-                title = stringResource(R.string.idr) + "$price / " + stringResource(R.string.day),
-                type = ParagraphType.SMALL,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1F)
-            )
-            if (type != ProductCardType.HISTORY && type != ProductCardType.COUNTER) {
+            if (type != ProductCardType.HISTORY) {
                 Paragraph(
-                    title = stringResource(R.string.rented_20),
+                    title = stringResource(R.string.idr) + "$price / " + stringResource(R.string.day),
+                    type = ParagraphType.SMALL,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1F)
+                )
+            }
+            if (type == ProductCardType.NORMAL) {
+                Paragraph(
+                    title = "tersewa $rented",
                     type = ParagraphType.SMALL,
                     fontWeight = FontWeight.Medium,
                     color = Neutral500
                 )
+            }
+        }
+
+        if (type == ProductCardType.COUNTER) {
+            Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_16))
+            Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
+                Counter(
+                    itemCount = itemCount,
+                    onClickPlus = { onClickPlus() },
+                    onClickMinus = { onClickMinus() })
             }
         }
     }
@@ -193,10 +216,10 @@ private fun Counter(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         RoundedIconButton(
-            icon = painterResource(id = R.drawable.ic_plus),
+            icon = painterResource(id = R.drawable.ic_minus),
             type = ButtonType.SECONDARY,
             size = ButtonSize.SMALL,
-            onClick = { /*TODO*/ })
+            onClick = { onClickMinus() })
         Paragraph(
             title = itemCount.toString(),
             type = ParagraphType.MEDIUM,
@@ -204,10 +227,10 @@ private fun Counter(
             modifier = Modifier.padding(horizontal = AppTheme.dimens.spacing_8)
         )
         RoundedIconButton(
-            icon = painterResource(id = R.drawable.ic_minus),
+            icon = painterResource(id = R.drawable.ic_plus),
             type = ButtonType.SECONDARY,
             size = ButtonSize.SMALL,
-            onClick = { /*TODO*/ })
+            onClick = { onClickPlus() })
     }
 }
 
@@ -224,7 +247,8 @@ fun HorizontalProductCardPreview() {
                 rating = 4.5,
                 type = ProductCardType.NORMAL,
                 status = "Selesai",
-                onClick = {},
+                rented = "10",
+                onClick = {}, onFavoriteClick = {}
             )
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
             HorizontalProductCard(
@@ -236,7 +260,8 @@ fun HorizontalProductCardPreview() {
                 rating = 4.5,
                 type = ProductCardType.FAVORITE,
                 status = "Selesai",
-                onClick = {},
+                rented = "10",
+                onClick = {}, onFavoriteClick = {}
             )
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
             HorizontalProductCard(
@@ -247,7 +272,9 @@ fun HorizontalProductCardPreview() {
                 rating = 4.5,
                 type = ProductCardType.HISTORY,
                 status = "Selesai",
+                rented = "10",
                 onClick = {},
+                onFavoriteClick = {}
             )
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
             HorizontalProductCard(
@@ -258,7 +285,9 @@ fun HorizontalProductCardPreview() {
                 rating = 4.5,
                 type = ProductCardType.COUNTER,
                 status = "Selesai",
+                rented = "10",
                 onClick = {},
+                onFavoriteClick = {}
             )
         }
     }
