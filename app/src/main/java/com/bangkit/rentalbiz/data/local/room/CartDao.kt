@@ -1,9 +1,6 @@
 package com.bangkit.rentalbiz.data.local.room
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.bangkit.rentalbiz.data.local.entity.CartItem
 
 @Dao
@@ -11,8 +8,14 @@ interface CartDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertCart(cartItem: CartItem)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertCarts(carts: List<CartItem>)
+
     @Query("SELECT * FROM cart")
     suspend fun getAllCart(): List<CartItem>
+
+    @Update
+    suspend fun updateItem(cart:CartItem)
 
     @Query("SELECT * FROM cart WHERE id = :id")
     suspend fun getCartItemById(id: String): List<CartItem>

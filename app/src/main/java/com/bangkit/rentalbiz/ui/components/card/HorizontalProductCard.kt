@@ -42,13 +42,14 @@ fun HorizontalProductCard(
     location: String,
     rating: Double,
     price: String,
-    status: String,
+    status: String = "Success",
     itemCount: Int = 1,
-    rented: String,
+    rented: String = "0",
     isFavorite: Boolean = false,
     type: Enum<ProductCardType> = ProductCardType.NORMAL,
+    onCountChange: (Int) -> Unit? = {},
     onClick: () -> Unit,
-    onFavoriteClick: () -> Unit ={},
+    onFavoriteClick: () -> Unit = {},
     onZeroCount: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -94,12 +95,16 @@ fun HorizontalProductCard(
                 itemCount = itemCount,
                 onFavoriteClick = { onFavoriteClick() },
                 modifier = Modifier.weight(1F),
-                onClickPlus = { itemCount++ },
+                onClickPlus = {
+                    itemCount++
+                    onCountChange(itemCount)
+                },
                 onClickMinus = {
                     if (itemCount <= 1) {
                         onZeroCount()
                     } else {
                         itemCount--
+                        onCountChange(itemCount)
                     }
                 }
             )

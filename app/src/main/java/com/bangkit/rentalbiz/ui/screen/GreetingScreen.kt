@@ -48,7 +48,6 @@ fun GreetingScreen(
             )
         }
         Column(modifier = Modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-
             Image(
                 painter = painterResource(id = R.drawable.grape_illustration_8),
                 contentDescription = stringResource(
@@ -94,7 +93,7 @@ fun GreetingScreen(
                     .fillMaxWidth()
                     .weight(1F),
                 onClick = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.RecommendationInput.route) {
                         popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     }
                 },

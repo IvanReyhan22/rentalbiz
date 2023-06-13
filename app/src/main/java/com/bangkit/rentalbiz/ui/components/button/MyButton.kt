@@ -49,6 +49,7 @@ fun MyButton(
                 ButtonType.SUCCESS -> Success400
                 ButtonType.ERROR -> Error400
                 ButtonType.ACCENT -> Primary400
+                else -> Shades90
             }
         )
     val buttonBorder = if (type == ButtonType.SECONDARY) BorderStroke(2.dp, Neutral100) else null

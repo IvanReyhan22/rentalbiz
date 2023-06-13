@@ -42,7 +42,7 @@ fun ProfileScreen(
 
     ProfileContent(
         uiState = uiState,
-        onInventoryClick = { /*TODO*/ },
+        onInventoryClick = { navController.navigate(Screen.Inventory.route) },
         onCartClick = { navController.navigate(Screen.Cart.route) },
         onFavoriteClick = {
             navController.navigate(Screen.Favorite.route)

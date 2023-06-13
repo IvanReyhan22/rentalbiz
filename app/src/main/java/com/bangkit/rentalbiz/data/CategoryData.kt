@@ -7,7 +7,7 @@ data class Category(
 object CategoryData {
     val categoryList = listOf<Category>(
         Category(name = "Populer"),
-        Category(name = "Elektronik"),
+        Category(name = "Electronic"),
         Category(name = "Dapur"),
         Category(name = "Travel"),
         Category(name = "Musik"),

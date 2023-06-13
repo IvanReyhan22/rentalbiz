@@ -23,11 +23,11 @@ class CartScreenViewModel @Inject constructor(
     val uiState: StateFlow<UiState<List<CartItem>>> get() = _uiState
 
     init {
+        setLoading()
         getAllCartItem()
     }
 
     private fun getAllCartItem() {
-        setLoading()
         viewModelScope.launch {
             productRepository.getAllCartItems().collect { result ->
                 _uiState.value = if (result != null && result.isNotEmpty()) {
@@ -44,6 +44,23 @@ class CartScreenViewModel @Inject constructor(
         viewModelScope.launch {
             productRepository.deleteCartItem(id)
             getAllCartItem()
+        }
+    }
+
+    fun updateItem(product: CartItem, count: Int) {
+        viewModelScope.launch {
+            val data = CartItem(
+                id = product.id,
+                city = product.city,
+                tersedia = product.tersedia,
+                nama = product.nama,
+                harga = product.harga,
+                imageUrl = product.imageUrl,
+                jumlahSewa = count
+            )
+            productRepository.updateCartItem(data).collect { result ->
+                if (result) getAllCartItem()
+            }
         }
     }
 

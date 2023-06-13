@@ -39,8 +39,8 @@ fun RoundedIconButton(
     val colorFilter = ColorFilter.tint(if (type == ButtonType.SECONDARY) Shades90 else Shades0)
     val iconSize = when (size) {
         ButtonSize.LARGE -> 28.dp
-        ButtonSize.MEDIUM -> 14.dp
-        ButtonSize.SMALL -> 12.dp
+        ButtonSize.MEDIUM -> 18.dp
+        ButtonSize.SMALL -> 14.dp
     }
 
     Button(

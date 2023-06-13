@@ -24,6 +24,9 @@ data class ProductResponse(
     @field:SerializedName("message")
     val message: String? = null,
 
+    @field:SerializedName("error")
+    val error: String? = null,
+
     @field:SerializedName("item")
     val item: Product? = null
 

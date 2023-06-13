@@ -13,3 +13,10 @@ data class RegisterRequest(
     val city:String,
     val phone:String,
 )
+
+data class TransactionRequest(
+    val id_barang:Int,
+    val tanggal_pinjam:String,
+    val tanggal_kembali:String,
+    val jumlah:Int,
+)

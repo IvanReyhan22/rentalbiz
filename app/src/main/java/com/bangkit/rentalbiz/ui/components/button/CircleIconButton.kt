@@ -43,6 +43,7 @@ fun CircleIconButton(
                 ButtonType.SUCCESS -> Success400
                 ButtonType.ERROR -> Error400
                 ButtonType.ACCENT -> Primary400
+                ButtonType.WARNING -> Warning400
             }
         )
     val buttonBorder = if (type == ButtonType.SECONDARY) BorderStroke(2.dp, Neutral100) else null
@@ -95,6 +96,11 @@ fun CircleIconButtonPreview() {
             CircleIconButton(
                 icon = painterResource(id = R.drawable.ic_outline_heart),
                 type = ButtonType.SUCCESS,
+                onClick = {})
+            Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_16))
+            CircleIconButton(
+                icon = painterResource(id = R.drawable.ic_outline_heart),
+                type = ButtonType.WARNING,
                 onClick = {})
         }
     }

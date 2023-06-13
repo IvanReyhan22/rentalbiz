@@ -1,6 +1,5 @@
 package com.bangkit.rentalbiz.ui.screen.home
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -174,6 +173,7 @@ fun HomeContent(
                 is UiState.Error -> {}
                 else -> {}
             }
+            item(span = { GridItemSpan(this.maxLineSpan) }) {}
         }
     }
 

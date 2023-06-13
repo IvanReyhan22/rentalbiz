@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.bangkit.rentalbiz.ui.common.HeadingType
@@ -20,6 +21,8 @@ fun Heading(
     textAlign: TextAlign = TextAlign.Start,
     fontWeight: FontWeight = FontWeight.Bold,
     color: Color = Shades90,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
     modifier: Modifier = Modifier,
 ) {
     Text(
@@ -36,6 +39,8 @@ fun Heading(
             HeadingType.H6 -> 18.sp
             else -> 18.sp
         },
+        overflow = overflow,
+        maxLines = maxLines,
         color = color,
         fontWeight = fontWeight,
         modifier = modifier

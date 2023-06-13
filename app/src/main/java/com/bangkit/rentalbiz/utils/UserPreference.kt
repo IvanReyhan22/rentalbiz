@@ -1,6 +1,7 @@
 package com.bangkit.rentalbiz.utils
 
 import android.content.Context
+import android.net.Uri
 import com.bangkit.rentalbiz.data.UserCredentials
 
 internal class UserPreference(context: Context) {
@@ -11,6 +12,7 @@ internal class UserPreference(context: Context) {
         private const val TOKEN = "token"
         private const val EMAIL = "email"
         private const val IS_FIRST_TIME = "is_first_time"
+        private const val TEMP_IMAGE = "temp_image"
     }
 
     private val preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -62,7 +64,28 @@ internal class UserPreference(context: Context) {
             remove(EMAIL)
             apply()
         }
+    }
 
+    fun saveImage(image: Uri) {
+        val data = image.toString()
+        val editor = preferences.edit()
+        editor.apply {
+            putString(TEMP_IMAGE, data)
+            apply()
+        }
+    }
+
+    fun getImage(): Uri {
+        val data = preferences.getString(TEMP_IMAGE, "")
+        return data?.takeIf { it.isNotEmpty() }?.let { Uri.parse(it) } ?: Uri.EMPTY
+    }
+
+    fun deleteImage() {
+        val editor = preferences.edit()
+        editor.apply() {
+            remove(TEMP_IMAGE)
+            apply()
+        }
     }
 
 }

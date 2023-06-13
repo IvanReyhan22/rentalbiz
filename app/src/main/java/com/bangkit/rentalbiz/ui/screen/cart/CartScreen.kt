@@ -8,9 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -29,6 +27,7 @@ import com.bangkit.rentalbiz.ui.common.ButtonType
 import com.bangkit.rentalbiz.ui.common.HeadingType
 import com.bangkit.rentalbiz.ui.common.UiState
 import com.bangkit.rentalbiz.ui.components.button.CircleIconButton
+import com.bangkit.rentalbiz.ui.components.button.MyButton
 import com.bangkit.rentalbiz.ui.components.card.HorizontalProductCard
 import com.bangkit.rentalbiz.ui.components.card.ProductCardType
 import com.bangkit.rentalbiz.ui.components.text.Heading
@@ -42,18 +41,28 @@ fun CartScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var isCartEmpty by remember { mutableStateOf(false) }
 
-    Scaffold(topBar = {
-        Surface(elevation = AppTheme.dimens.spacing_2) {
-            Box(modifier = Modifier.background(color = Shades0)) {
-                TopBar(onLoveClick = {
-                    navController.navigate(Screen.Favorite.route) {
-                        popUpTo(Screen.Cart.route) { inclusive = true }
-                    }
-                })
+    Scaffold(
+        topBar = {
+            Surface(elevation = AppTheme.dimens.spacing_2) {
+                Box(modifier = Modifier.background(color = Shades0)) {
+                    TopBar(onLoveClick = {
+                        navController.navigate(Screen.Favorite.route) {
+                            popUpTo(Screen.Cart.route) { inclusive = true }
+                        }
+                    })
+                }
+            }
+        },
+        bottomBar = {
+            if (!isCartEmpty) {
+                BottomBar(
+                    onRentClick = { navController.navigate(Screen.CheckOut.route) },
+                )
             }
         }
-    }) { paddingValues ->
+    ) { paddingValues ->
         Box(modifier = modifier.padding(paddingValues)) {
             when (uiState) {
                 is UiState.Loading -> ScreenState(isLoading = true)
@@ -61,7 +70,9 @@ fun CartScreen(
                 is UiState.Success -> {
                     CartContent(
                         data = (uiState as UiState.Success<List<CartItem>>).data,
-                        deleteCartItem = { viewModel.deleteCartItem(it) }
+                        deleteCartItem = { viewModel.deleteCartItem(it) },
+                        onCartEmpty = { isCartEmpty = true },
+                        onItemCountChange = { item, count -> viewModel.updateItem(item, count) }
                     )
                 }
                 else -> {}
@@ -76,6 +87,8 @@ fun CartScreen(
 fun CartContent(
     data: List<CartItem>,
     deleteCartItem: (String) -> Unit,
+    onCartEmpty: () -> Unit,
+    onItemCountChange: (CartItem, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -87,20 +100,25 @@ fun CartContent(
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.spacing_16),
         modifier = modifier.fillMaxSize()
     ) {
-        items(data) { item ->
-            HorizontalProductCard(
-                onClick = { /*TODO*/ },
-                onZeroCount = { deleteCartItem(item.id) },
-                imageUrl = item.imageUrl,
-                title = item.nama,
-                location = item.city,
-                rating = 4.5,
-                price = item.harga,
-                itemCount = item.jumlahSewa,
-                status = "",
-                rented = "",
-                type = ProductCardType.COUNTER
-            )
+        if (data.isNotEmpty()) {
+            items(data) { item ->
+                HorizontalProductCard(
+                    onClick = { /*TODO*/ },
+                    onZeroCount = { deleteCartItem(item.id) },
+                    imageUrl = item.imageUrl,
+                    title = item.nama,
+                    location = item.city,
+                    rating = 4.5,
+                    price = item.harga,
+                    itemCount = item.jumlahSewa,
+                    status = "",
+                    rented = "",
+                    onCountChange = { onItemCountChange(item, it) },
+                    type = ProductCardType.COUNTER
+                )
+            }
+        } else {
+            onCartEmpty()
         }
     }
 }
@@ -138,7 +156,9 @@ private fun ScreenState(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .padding(AppTheme.dimens.spacing_24)
+            .fillMaxSize()
     ) {
         if (isLoading) {
             Box(
@@ -171,13 +191,37 @@ private fun ScreenState(
     }
 }
 
+@Composable
+private fun BottomBar(
+    onRentClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(elevation = AppTheme.dimens.spacing_8) {
+        Box(
+            modifier = modifier.padding(
+                horizontal = AppTheme.dimens.spacing_24,
+                vertical = AppTheme.dimens.spacing_12
+            )
+        ) {
+            MyButton(
+                title = stringResource(R.string.rent),
+                size = ButtonSize.LARGE,
+                onClick = { onRentClick() },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, device = Devices.PIXEL)
 @Composable
 fun CartPreview() {
     RentalBizTheme {
         CartContent(
+            onCartEmpty = {},
             data = emptyList(),
-            deleteCartItem = {}
+            deleteCartItem = {},
+            onItemCountChange = { _, _ -> }
         )
     }
 }

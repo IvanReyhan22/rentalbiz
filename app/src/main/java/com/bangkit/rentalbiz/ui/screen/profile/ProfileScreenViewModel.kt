@@ -32,7 +32,6 @@ class ProfileScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val userPreference = UserPreference(context)
             val user = userPreference.getAuthKey()
-            Log.e("MODEL",user.toString())
             if (user.userId != null) {
                 _uiState.value = UiState.Success(user)
             } else {

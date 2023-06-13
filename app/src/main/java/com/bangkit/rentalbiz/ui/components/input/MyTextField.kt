@@ -25,6 +25,8 @@ fun MyTextField(
     label: String? = null,
     hint: String? = null,
     maxLines: Int = 1,
+    readOnly: Boolean = false,
+    isTextArea: Boolean = false,
     singleLine: Boolean = true,
     isPassword: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -41,8 +43,10 @@ fun MyTextField(
                 type = ParagraphType.MEDIUM,
                 fontWeight = FontWeight.Medium,
                 color = Shades90,
-                modifier = modifier.padding(bottom = AppTheme.dimens.spacing_8)
+                modifier = modifier
+                    .fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_8))
         }
         TextField(
             value = value,
@@ -56,15 +60,18 @@ fun MyTextField(
             placeholder = {
                 Paragraph(title = placeholder, type = ParagraphType.MEDIUM, color = Neutral500)
             },
+            readOnly = readOnly,
             leadingIcon = leadingIcon,
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = keyboardOptions,
-            singleLine = singleLine,
-            maxLines = maxLines,
+            singleLine = if (isTextArea) false else singleLine,
+            maxLines = if (isTextArea) 8 else maxLines,
             modifier = Modifier
                 .widthIn(min = 1.dp)
                 .fillMaxWidth()
-                .heightIn(min = AppTheme.dimens.spacing_24)
+                .heightIn(
+                    min = if (isTextArea) 180.dp else AppTheme.dimens.spacing_24,
+                )
         )
         if (!hint.isNullOrEmpty()) {
             Paragraph(

@@ -61,7 +61,6 @@ fun DetailProductScreen(
         viewModel.checkIsFavorite(productId = productId)
 
         onDispose {
-            // Cleanup code (if needed)
         }
     }
 

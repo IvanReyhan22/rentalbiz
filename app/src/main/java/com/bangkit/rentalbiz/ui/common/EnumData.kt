@@ -30,6 +30,13 @@ enum class ButtonType {
     SECONDARY,
     SUCCESS,
     ERROR,
-    ACCENT
+    ACCENT,
+    WARNING
 }
 
+val TransactionStatus = mapOf(
+    1 to "Pending",
+    2 to "Sewa",
+    3 to "Batal",
+    4 to "Selesai"
+)
