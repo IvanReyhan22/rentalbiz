@@ -29,13 +29,13 @@ class HomeScreenViewModel @Inject constructor(
     private val _query = mutableStateOf("")
     val query: State<String> get() = _query
 
-    init {
-        getAllProducts()
-    }
-
     fun updateQuery(newQuery: String) {
         _query.value = newQuery
         getProductByName()
+    }
+
+    init {
+        getAllProducts()
     }
 
     private fun getAllProducts() {

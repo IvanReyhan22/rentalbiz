@@ -1,6 +1,7 @@
 package com.bangkit.rentalbiz.ui.screen.login
 
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -58,9 +59,7 @@ fun LoginScreen(
             onLoginClick = {
                 viewModel.login(
                     onSignInComplete = {
-                        navController.navigate(Screen.Greeting.route) {
-                            popUpTo(navController.graph.id) { inclusive = true }
-                        }
+                        navController.navigate(Screen.Greeting.route)
                     },
                 )
             },

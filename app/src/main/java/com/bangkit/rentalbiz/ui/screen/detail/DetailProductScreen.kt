@@ -35,6 +35,7 @@ import com.bangkit.rentalbiz.ui.components.card.StoreCard
 import com.bangkit.rentalbiz.ui.components.modal.ContactBottomSheetModal
 import com.bangkit.rentalbiz.ui.components.text.Heading
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
+import com.bangkit.rentalbiz.ui.navigation.Screen
 import com.bangkit.rentalbiz.ui.theme.*
 import com.talhafaki.composablesweettoast.util.SweetToastUtil.SweetError
 import com.talhafaki.composablesweettoast.util.SweetToastUtil.SweetSuccess
@@ -56,7 +57,7 @@ fun DetailProductScreen(
         confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded },
     )
 
-    DisposableEffect(Unit){
+    DisposableEffect(Unit) {
         viewModel.getProduct(productId = productId)
         viewModel.checkIsFavorite(productId = productId)
 
@@ -87,7 +88,15 @@ fun DetailProductScreen(
                         openDialogError = true
                     })
                 },
-                onBuyClick = {}
+                onBuyClick = {
+                    viewModel.rent(it, onSuccess = {
+                        navController.navigate(Screen.Cart.route) {
+                            popUpTo(Screen.DetailProduct.route) { inclusive = true }
+                        }
+                    }, onFailed = {
+                        openDialogError = true
+                    })
+                }
             )
         }
         else -> {
@@ -184,8 +193,6 @@ fun DetailContent(
                     description = product.deskripsi.toString(),
                     requirenment = product.persyaratan.toString()
                 )
-                Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_24))
-                CheckAvailability()
             }
         }
 

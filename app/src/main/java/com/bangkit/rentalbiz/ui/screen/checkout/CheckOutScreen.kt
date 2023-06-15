@@ -7,9 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,10 +32,12 @@ import com.bangkit.rentalbiz.ui.components.button.RoundedIconButton
 import com.bangkit.rentalbiz.ui.components.card.HorizontalProductCard
 import com.bangkit.rentalbiz.ui.components.card.ProductCardType
 import com.bangkit.rentalbiz.ui.components.input.MyTextField
+import com.bangkit.rentalbiz.ui.components.modal.SetAddressBottomSheetModal
 import com.bangkit.rentalbiz.ui.components.text.Heading
 import com.bangkit.rentalbiz.ui.components.text.Paragraph
 import com.bangkit.rentalbiz.ui.navigation.Screen
 import com.bangkit.rentalbiz.ui.theme.*
+import com.bangkit.rentalbiz.utils.AddressData
 import com.bangkit.rentalbiz.utils.Helper.dateToReadable
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
@@ -44,8 +45,10 @@ import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.calendar.models.CalendarStyle
 import com.talhafaki.composablesweettoast.util.SweetToastUtil
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CheckOutScreen(
     navController: NavController,
@@ -53,40 +56,86 @@ fun CheckOutScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val address by viewModel.address
     val totalItemPrice by viewModel.totalItemPrice
     val deliveryFee by viewModel.deliveryFee
     val calendarState = rememberUseCaseState()
+    val coroutineScope = rememberCoroutineScope()
     val selectedDateRange by viewModel.dateRange
     val transactionProcess by viewModel.transactionProgress
     var openDialogError by remember { mutableStateOf(false) }
 
+    val sheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded },
+    )
+
     Scaffold(bottomBar = {
-        BottomBar(
-            transactionProcess = transactionProcess,
-            onRentClick = {
-                viewModel.transactionProcess(
-                    onSuccess = {
-                        navController.navigate(Screen.SuccessCheckout.route) {
-                            popUpTo(Screen.CheckOut.route) { inclusive = true }
+        if (!sheetState.isVisible) {
+            BottomBar(
+                transactionProcess = transactionProcess,
+                onRentClick = {
+                    viewModel.transactionProcess(
+                        onSuccess = {
+                            navController.navigate(Screen.SuccessCheckout.route) {
+                                popUpTo(Screen.CheckOut.route) { inclusive = true }
+                            }
+                        },
+                        onFailed = {
+                            openDialogError = true
                         }
-                    },
-                    onFailed = {
-                        openDialogError = true
-                    }
-                )
-            },
-        )
+                    )
+                },
+            )
+        }
     }) { paddingValues ->
         Box(modifier = modifier.padding(paddingValues)) {
-            CheckOutContent(
-                uiState = uiState,
-                totalItemPrice = totalItemPrice,
-                deliveryFee = deliveryFee,
-                selectedDateRange = selectedDateRange,
-                onDateClick = { calendarState.show() },
-                onItemClick = {},
-                deleteCartItem = {},
-            )
+            ModalBottomSheetLayout(
+                sheetState = sheetState,
+                sheetContent = {
+                    SetAddressBottomSheetModal(
+                        title = address.title,
+                        address = address.address,
+                        onTitleChange = { viewModel.updateAddress(title = it) },
+                        onAddressChange = { viewModel.updateAddress(address = it) },
+                        submit = { _, _ ->
+                            coroutineScope.launch {
+                                viewModel.saveAddress(
+                                    viewModel.address.value.title,
+                                    viewModel.address.value.address
+                                )
+                                sheetState.hide()
+                            }
+                        },
+                    )
+                },
+                sheetShape = MaterialTheme.shapes.large.copy(
+                    topStart = CornerSize(AppTheme.dimens.radius_16),
+                    topEnd = CornerSize(AppTheme.dimens.radius_16)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                CheckOutContent(
+                    uiState = uiState,
+                    address = address,
+                    totalItemPrice = totalItemPrice,
+                    deliveryFee = deliveryFee,
+                    selectedDateRange = selectedDateRange,
+                    onDateClick = { calendarState.show() },
+                    onItemClick = {},
+                    deleteCartItem = {},
+                    onAddressEditClick = {
+                        coroutineScope.launch {
+                            if (sheetState.isVisible) {
+                                sheetState.hide()
+                            } else {
+                                sheetState.show()
+                            }
+                        }
+                    }
+                )
+            }
             CalendarDialog(
                 state = calendarState,
                 config = CalendarConfig(
@@ -118,11 +167,13 @@ fun CheckOutScreen(
 @Composable
 fun CheckOutContent(
     uiState: UiState<List<CartItem>>,
+    address: AddressData,
     totalItemPrice: Int,
     deliveryFee: Int,
     selectedDateRange: Range<LocalDate>,
     onDateClick: () -> Unit,
     onItemClick: (String) -> Unit,
+    onAddressEditClick: () -> Unit,
     deleteCartItem: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -136,7 +187,7 @@ fun CheckOutContent(
                     .padding(bottom = AppTheme.dimens.spacing_24)
                     .fillMaxWidth()
             ) {
-                Address(address = stringResource(R.string.dummy_location), onEditClick = {})
+                Address(address = address, onEditClick = { onAddressEditClick() })
             }
         }
         item {
@@ -286,7 +337,7 @@ fun DatePicker(
 
 @Composable
 fun Address(
-    address: String,
+    address: AddressData,
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -297,13 +348,13 @@ fun Address(
     ) {
         Column {
             Paragraph(
-                title = stringResource(R.string.main_address),
+                title = address.title,
                 fontWeight = FontWeight.Bold,
                 type = ParagraphType.LARGE
             )
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_4))
             Paragraph(
-                title = address,
+                title = address.address,
                 type = ParagraphType.MEDIUM,
                 color = Neutral500
             )
@@ -483,9 +534,11 @@ fun CheckOutPreview() {
     RentalBizTheme {
         CheckOutContent(
             uiState = UiState.Loading,
+            address = AddressData("", ""),
             totalItemPrice = 10000,
             selectedDateRange = Range(LocalDate.now(), LocalDate.now()),
             onDateClick = {},
+            onAddressEditClick = {},
             deliveryFee = 0,
             onItemClick = {},
             deleteCartItem = {}

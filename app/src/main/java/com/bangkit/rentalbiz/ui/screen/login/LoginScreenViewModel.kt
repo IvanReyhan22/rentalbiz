@@ -75,15 +75,16 @@ class LoginScreenViewModel @Inject constructor(
                 password = _loginForm.value.password
             )
             userRepository.login(loginRequest).collect { response ->
-                _uiState.value = when {
+                when {
                     response?.error?.contains(
                         "invalid",
                         ignoreCase = true
                     ) == true -> { // with error message invalid credentials
-                        UiState.Error(context.getString(R.string.invalid_credentials))
+                        _uiState.value =
+                            UiState.Error(context.getString(R.string.invalid_credentials))
                     }
                     response?.error != null -> { // with error message
-                        UiState.Error(response.error)
+                        _uiState.value = UiState.Error(response.error)
                     }
                     response != null -> { // not null
                         { /*SAVE AUTH TODO*/ }
@@ -96,11 +97,11 @@ class LoginScreenViewModel @Inject constructor(
                             isFirstTime = false,
                         )
                         saveAuthKey(userCredentials)
+                        _uiState.value = UiState.Success(response.token.toString())
                         onSignInComplete()
-                        UiState.Success(response.token.toString())
                     }
                     else -> { // other error message
-                        UiState.Error(context.getString(R.string.connection_error))
+                        _uiState.value = UiState.Error(context.getString(R.string.connection_error))
                     }
                 }
             }

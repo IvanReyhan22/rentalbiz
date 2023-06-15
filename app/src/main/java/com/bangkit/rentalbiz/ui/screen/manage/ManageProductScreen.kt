@@ -133,6 +133,7 @@ fun ManageProductScreen(
                     onSubmit = {
                         if (productId?.isNotEmpty() == true) {
                             viewModel.updateProduct(
+                                id=productId,
                                 onSuccess = {
                                     openDialogSuccess = true
                                     navController.popBackStack()
@@ -244,7 +245,7 @@ fun ManageContent(
                             .fillMaxWidth()
                             .height(240.dp)
                             .clip(RoundedCornerShape(AppTheme.dimens.radius_12))
-                            .clickable { onImageClick() }
+                            .clickable { if (image != Uri.EMPTY) onImageClick() }
                     )
                 } else {
                     Image(

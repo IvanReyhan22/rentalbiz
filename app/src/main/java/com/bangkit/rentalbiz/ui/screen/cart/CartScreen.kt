@@ -65,9 +65,16 @@ fun CartScreen(
     ) { paddingValues ->
         Box(modifier = modifier.padding(paddingValues)) {
             when (uiState) {
-                is UiState.Loading -> ScreenState(isLoading = true)
-                is UiState.Error -> ScreenState(isLoading = false)
+                is UiState.Loading -> {
+                    isCartEmpty = true
+                    ScreenState(isLoading = true)
+                }
+                is UiState.Error -> {
+                    isCartEmpty = true
+                    ScreenState(isLoading = false)
+                }
                 is UiState.Success -> {
+                    isCartEmpty = false
                     CartContent(
                         data = (uiState as UiState.Success<List<CartItem>>).data,
                         deleteCartItem = { viewModel.deleteCartItem(it) },
@@ -75,7 +82,9 @@ fun CartScreen(
                         onItemCountChange = { item, count -> viewModel.updateItem(item, count) }
                     )
                 }
-                else -> {}
+                else -> {
+                    isCartEmpty = true
+                }
             }
         }
 

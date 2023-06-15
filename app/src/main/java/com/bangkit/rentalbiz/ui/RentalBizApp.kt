@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -31,16 +32,16 @@ import com.bangkit.rentalbiz.ui.navigation.NavigationItem
 import com.bangkit.rentalbiz.ui.navigation.Screen
 import com.bangkit.rentalbiz.ui.screen.GreetingScreen
 import com.bangkit.rentalbiz.ui.screen.OnBoardingScreen
+import com.bangkit.rentalbiz.ui.screen.camera.CameraScreen
 import com.bangkit.rentalbiz.ui.screen.cart.CartScreen
 import com.bangkit.rentalbiz.ui.screen.checkout.CheckOutScreen
+import com.bangkit.rentalbiz.ui.screen.checkout.SuccessConfirmationScreen
 import com.bangkit.rentalbiz.ui.screen.detail.DetailProductScreen
 import com.bangkit.rentalbiz.ui.screen.favorite.FavoriteScreen
 import com.bangkit.rentalbiz.ui.screen.history.HistoryScreen
 import com.bangkit.rentalbiz.ui.screen.home.HomeScreen
 import com.bangkit.rentalbiz.ui.screen.inventory.InventoryScreen
 import com.bangkit.rentalbiz.ui.screen.login.LoginScreen
-import com.bangkit.rentalbiz.ui.screen.camera.CameraScreen
-import com.bangkit.rentalbiz.ui.screen.checkout.SuccessConfirmationScreen
 import com.bangkit.rentalbiz.ui.screen.manage.ManageProductScreen
 import com.bangkit.rentalbiz.ui.screen.profile.ProfileScreen
 import com.bangkit.rentalbiz.ui.screen.recommendation.RecommendationInputScreen
@@ -50,19 +51,17 @@ import com.bangkit.rentalbiz.ui.theme.Neutral500
 import com.bangkit.rentalbiz.ui.theme.Neutral600
 import com.bangkit.rentalbiz.ui.theme.Primary400
 import com.bangkit.rentalbiz.ui.theme.Shades0
-import com.bangkit.rentalbiz.utils.UserPreference
 
 
 @Composable
 fun RentalBizApp(
     modifier: Modifier = Modifier,
+    viewModel: RentalBizAppViewModel = hiltViewModel(),
     navController: NavHostController = rememberNavController()
 ) {
-    val context = LocalContext
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val userPreference = UserPreference(context.current)
-    val isFirstTime = userPreference.getIsFirstTime()
+    val isFirstTime by viewModel.userData
 
     val bottomNavScreen = listOf(
         Screen.Home.route,

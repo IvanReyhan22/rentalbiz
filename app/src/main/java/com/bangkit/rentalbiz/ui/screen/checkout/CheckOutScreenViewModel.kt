@@ -1,6 +1,7 @@
 package com.bangkit.rentalbiz.ui.screen.checkout
 
 import android.content.Context
+import android.util.Log
 import android.util.Range
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -11,7 +12,9 @@ import com.bangkit.rentalbiz.data.ProductRepository
 import com.bangkit.rentalbiz.data.local.entity.CartItem
 import com.bangkit.rentalbiz.data.remote.TransactionRequest
 import com.bangkit.rentalbiz.ui.common.UiState
+import com.bangkit.rentalbiz.utils.AddressData
 import com.bangkit.rentalbiz.utils.Helper.dateToServerFormat
+import com.bangkit.rentalbiz.utils.UserPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,8 +43,12 @@ class CheckOutScreenViewModel @Inject constructor(
     private val _transactionProgress = mutableStateOf(false)
     val transactionProgress: State<Boolean> get() = _transactionProgress
 
+    private val _address = mutableStateOf(AddressData("--", "---"))
+    val address: State<AddressData> get() = _address
+
     init {
         getAllCartItem()
+        getAddress()
     }
 
     private fun getAllCartItem() {
@@ -84,16 +91,41 @@ class CheckOutScreenViewModel @Inject constructor(
                                 _uiState.value = UiState.Idle
                                 onSuccess()
                             } else {
-                                _uiState.value = UiState.Error(context.getString(R.string.payment_failed))
+                                _uiState.value =
+                                    UiState.Error(context.getString(R.string.payment_failed))
                                 onFailed()
                             }
                         } else {
-                            _uiState.value = UiState.Error(context.getString(R.string.payment_failed))
+                            _uiState.value =
+                                UiState.Error(context.getString(R.string.payment_failed))
                             onFailed()
                         }
                     }
                 }
             }
+        }
+    }
+
+    fun saveAddress(title: String, address: String) {
+        viewModelScope.launch {
+            val userPreference = UserPreference(context)
+            userPreference.saveAddress(title, address)
+            getAddress()
+        }
+    }
+
+    fun updateAddress(
+        title: String = _address.value.title,
+        address: String = _address.value.address
+    ) {
+        _address.value = AddressData(title, address)
+    }
+
+    fun getAddress() {
+        viewModelScope.launch {
+            val userPreference = UserPreference(context)
+            val data = userPreference.getAddress()
+            _address.value = AddressData(data.title, data.address)
         }
     }
 }

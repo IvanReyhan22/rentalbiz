@@ -13,6 +13,8 @@ internal class UserPreference(context: Context) {
         private const val EMAIL = "email"
         private const val IS_FIRST_TIME = "is_first_time"
         private const val TEMP_IMAGE = "temp_image"
+        private const val ADDRESS_NAME = "address_name"
+        private const val ADDRESS = "address"
     }
 
     private val preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -88,4 +90,33 @@ internal class UserPreference(context: Context) {
         }
     }
 
+    fun saveAddress(title: String,address: String) {
+        val editor = preferences.edit()
+        editor.apply {
+            putString(ADDRESS_NAME, title)
+            putString(ADDRESS, address)
+            apply()
+        }
+    }
+
+    fun getAddress(): AddressData {
+        val addressName = preferences.getString(ADDRESS_NAME, "--")
+        val address = preferences.getString(ADDRESS, "---")
+        return AddressData(addressName.toString(), address.toString())
+    }
+
+    fun deleteAddress() {
+        val editor = preferences.edit()
+        editor.apply() {
+            remove(ADDRESS_NAME)
+            remove(ADDRESS)
+            apply()
+        }
+    }
+
 }
+
+data class AddressData(
+    val title: String,
+    val address: String,
+)

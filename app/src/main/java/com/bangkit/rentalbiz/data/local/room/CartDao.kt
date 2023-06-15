@@ -5,10 +5,10 @@ import com.bangkit.rentalbiz.data.local.entity.CartItem
 
 @Dao
 interface CartDao {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCart(cartItem: CartItem)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCarts(carts: List<CartItem>)
 
     @Query("SELECT * FROM cart")

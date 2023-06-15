@@ -1,7 +1,6 @@
 package com.bangkit.rentalbiz.ui.screen.detail
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -11,7 +10,6 @@ import com.bangkit.rentalbiz.data.ProductRepository
 import com.bangkit.rentalbiz.data.local.entity.CartItem
 import com.bangkit.rentalbiz.data.local.entity.FavoriteItem
 import com.bangkit.rentalbiz.data.remote.response.Product
-import com.bangkit.rentalbiz.dummy.DummyProductData
 import com.bangkit.rentalbiz.ui.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -128,6 +126,17 @@ class DetailProductScreenViewModel @Inject constructor(
             productRepository.addToCart(data).collect { result ->
                 if (result) onSuccess() else onFailed()
             }
+        }
+    }
+
+    fun rent(product: Product, onSuccess: () -> Unit, onFailed: () -> Unit) {
+        viewModelScope.launch {
+            productRepository.deleteAllCartItem()
+            addToCart(
+                product = product,
+                onSuccess = onSuccess,
+                onFailed = onFailed
+            )
         }
     }
 

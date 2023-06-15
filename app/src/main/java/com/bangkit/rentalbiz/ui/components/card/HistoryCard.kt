@@ -1,6 +1,5 @@
 package com.bangkit.rentalbiz.ui.components.card
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,7 +55,7 @@ fun HistoryCard(
             .clickable { onClick() }
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
         ) {
@@ -74,27 +73,30 @@ fun HistoryCard(
                 title = title,
                 returnDate = returnDate,
                 quantity = quantity,
-                finalPrice = finalPrice
+                finalPrice = finalPrice,
+                modifier = Modifier.weight(1F)
             )
             Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_8))
-            CircleIconButton(
-                icon = when (status) {
-                    1 -> painterResource(id = R.drawable.ic_outline_clock)
-                    2 -> painterResource(id = R.drawable.ic_outline_archive)
-                    3 -> painterResource(id = R.drawable.ic_x)
-                    4 -> painterResource(id = R.drawable.ic_check)
-                    else -> painterResource(id = R.drawable.ic_outline_clock)
-                },
-                size = ButtonSize.MEDIUM,
-                type = when (status) {
-                    1 -> ButtonType.SECONDARY
-                    2 -> ButtonType.WARNING
-                    3 -> ButtonType.ERROR
-                    4 -> ButtonType.SUCCESS
-                    else -> ButtonType.SECONDARY
-                },
-                onClick = { /*TODO*/ },
-            )
+            Box(modifier = Modifier.size(AppTheme.dimens.spacing_36)) {
+                CircleIconButton(
+                    icon = when (status) {
+                        1 -> painterResource(id = R.drawable.ic_outline_clock)
+                        2 -> painterResource(id = R.drawable.ic_outline_archive)
+                        3 -> painterResource(id = R.drawable.ic_x)
+                        4 -> painterResource(id = R.drawable.ic_check)
+                        else -> painterResource(id = R.drawable.ic_outline_clock)
+                    },
+                    size = ButtonSize.MEDIUM,
+                    type = when (status) {
+                        1 -> ButtonType.SECONDARY
+                        2 -> ButtonType.WARNING
+                        3 -> ButtonType.ERROR
+                        4 -> ButtonType.SUCCESS
+                        else -> ButtonType.SECONDARY
+                    },
+                    onClick = { /*TODO*/ },
+                )
+            }
         }
     }
 }
@@ -125,20 +127,38 @@ fun DueDate(
     returnDate: String,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_outline_secondary_clock),
-            contentDescription = "Clock icon",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(AppTheme.dimens.spacing_14)
-        )
-        Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_4))
-        Paragraph(
-            title = "${dateServerToReadable(returnDate)} - ${calculateDaysLeftFromDate(returnDate)} hari",
-            type = ParagraphType.SMALL,
-            color = Neutral500
-        )
+    Column() {
+        Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_outline_calendar),
+                contentDescription = "Clock icon",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(AppTheme.dimens.spacing_18)
+            )
+            Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_4))
+            Paragraph(
+                title = "${dateServerToReadable(returnDate)}",
+                type = ParagraphType.SMALL,
+                color = Neutral500
+            )
+        }
+        Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_4))
+        Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_outline_secondary_clock),
+                contentDescription = "Clock icon",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(AppTheme.dimens.spacing_18)
+            )
+            Spacer(modifier = Modifier.width(AppTheme.dimens.spacing_4))
+            Paragraph(
+                title = "${calculateDaysLeftFromDate(returnDate)} hari",
+                type = ParagraphType.SMALL,
+                color = Neutral500
+            )
+        }
     }
+
 }
 
 @Preview(showBackground = true)

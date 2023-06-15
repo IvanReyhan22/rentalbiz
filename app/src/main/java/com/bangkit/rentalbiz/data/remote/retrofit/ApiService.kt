@@ -1,6 +1,7 @@
 package com.bangkit.rentalbiz.data.remote.retrofit
 
 import com.bangkit.rentalbiz.data.remote.LoginRequest
+import com.bangkit.rentalbiz.data.remote.ProductRequest
 import com.bangkit.rentalbiz.data.remote.RegisterRequest
 import com.bangkit.rentalbiz.data.remote.TransactionRequest
 import com.bangkit.rentalbiz.data.remote.response.*
@@ -45,6 +46,9 @@ interface ApiService {
         @Part("persyaratan") persyaratan: RequestBody,
         @Part("stok") stok: RequestBody,
     ): Call<ProductResponse>
+
+    @PUT("items/{id}")
+    fun updateProduct(@Path("id")id:String, @Body request: ProductRequest):Call<ProductResponse>
 
     @DELETE("items/{id}")
     fun deleteProduct(

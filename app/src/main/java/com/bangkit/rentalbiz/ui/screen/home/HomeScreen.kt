@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bangkit.rentalbiz.R
+import com.bangkit.rentalbiz.data.Category
+import com.bangkit.rentalbiz.data.CategoryData
 import com.bangkit.rentalbiz.data.remote.response.Product
 import com.bangkit.rentalbiz.ui.common.*
 import com.bangkit.rentalbiz.ui.components.button.CircleIconButton
@@ -60,6 +62,7 @@ fun HomeScreen(
         skipHalfExpanded = skipHalfExpanded,
         confirmStateChange = { it != ModalBottomSheetValue.Expanded },
     )
+    var selectedCategory by remember { mutableStateOf(CategoryData.categoryList[0].name) }
     if (sheetState.isVisible) toggleBottomNav(false) else toggleBottomNav(true)
 
     HomeContent(
@@ -67,6 +70,7 @@ fun HomeScreen(
         sheetState = sheetState,
         query = query,
         uiState = uiState,
+        selectedCategory = selectedCategory,
         onCartClick = {
             navController.navigate(Screen.Cart.route)
         },
@@ -93,6 +97,9 @@ fun HomeScreen(
                 }
             }
         },
+        onCategoryClick = {
+            selectedCategory = it.name
+        }
     )
 
 }
@@ -107,8 +114,10 @@ fun HomeContent(
     productList: List<Product>,
     onProductClick: (Product) -> Unit,
     onQueryChange: (String) -> Unit,
+    onCategoryClick: (Category) -> Unit,
     onFilterClick: () -> Unit,
     onCartClick: () -> Unit,
+    selectedCategory: String,
     modifier: Modifier = Modifier
 ) {
     ModalBottomSheetLayout(
@@ -142,7 +151,7 @@ fun HomeContent(
                 }
             }
             item(span = { GridItemSpan(this.maxLineSpan) }) {
-                CategoryList()
+                CategoryList(selectedCategory = selectedCategory, onCategoryClick = onCategoryClick)
             }
             when (uiState) {
                 is UiState.Loading -> {
@@ -198,21 +207,12 @@ fun TopBar(
                 type = HeadingType.H6,
                 modifier = Modifier.padding(bottom = AppTheme.dimens.spacing_4)
             )
-            Row(modifier = Modifier.clickable { onLocationClick() }) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_location_red),
-                    contentDescription = "Marker Location Icon",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .padding(end = AppTheme.dimens.spacing_8)
-                        .size(24.dp)
-                )
-                Paragraph(
-                    title = stringResource(R.string.dummy_location),
-                    type = ParagraphType.MEDIUM,
-                    color = Neutral500
-                )
-            }
+
+            Paragraph(
+                title = "Apa yang kamu cari hari ini?",
+                type = ParagraphType.MEDIUM,
+                color = Neutral500
+            )
         }
         Row(modifier = Modifier) {
             CircleIconButton(
@@ -256,19 +256,20 @@ fun FilteringFunction(
 
 @Composable
 fun CategoryList(
+    selectedCategory: String,
+    onCategoryClick: (Category) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tempItem = listOf("Populer", "Terbaru", "Komputer", "Dapur", "Alat Medis", "Fotografi")
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        items(tempItem) { item ->
+        items(CategoryData.categoryList) { item ->
             MyButton(
-                title = item,
-                onClick = { /*TODO*/ },
+                title = item.name,
+                onClick = { onCategoryClick(item) },
                 size = ButtonSize.SMALL,
-                type = ButtonType.SECONDARY,
+                type = if (item.name == selectedCategory) ButtonType.ACCENT else ButtonType.SECONDARY,
                 modifier = Modifier.padding(end = AppTheme.dimens.spacing_8)
             )
         }
@@ -338,11 +339,13 @@ fun HomeScreenPreview() {
                 confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded },
             ),
             productList = emptyList(),
+            selectedCategory = "Populer",
             onProductClick = { /*TODO*/ },
             onQueryChange = {},
             onFilterClick = { /*TODO*/ },
             onFilterSubmit = {},
-            onCartClick = {}
+            onCartClick = {},
+            onCategoryClick = {}
         )
     }
 }

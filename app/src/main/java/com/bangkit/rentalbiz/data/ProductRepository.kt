@@ -5,6 +5,7 @@ import com.bangkit.rentalbiz.data.local.entity.CartItem
 import com.bangkit.rentalbiz.data.local.entity.FavoriteItem
 import com.bangkit.rentalbiz.data.local.room.CartDao
 import com.bangkit.rentalbiz.data.local.room.FavoriteDao
+import com.bangkit.rentalbiz.data.remote.ProductRequest
 import com.bangkit.rentalbiz.data.remote.TransactionRequest
 import com.bangkit.rentalbiz.data.remote.response.*
 import com.bangkit.rentalbiz.data.remote.retrofit.ApiService
@@ -64,6 +65,15 @@ class ProductRepository(
     suspend fun deleteCartItem(id: String): Flow<Boolean> {
         return try {
             cartDao.deleteItem(id)
+            flowOf(true)
+        } catch (e: Exception) {
+            flowOf(false)
+        }
+    }
+
+    suspend fun deleteAllCartItem(): Flow<Boolean> {
+        return try {
+            cartDao.deleteAllCart()
             flowOf(true)
         } catch (e: Exception) {
             flowOf(false)
@@ -227,6 +237,22 @@ class ProductRepository(
             }
         } catch (e: Exception) {
             Log.e("REPOSITORY", e.message.toString())
+            flowOf(null)
+        }
+    }
+
+    suspend fun updateProduct(
+        id:String,
+        request: ProductRequest,
+    ): Flow<ProductResponse?> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateProduct(id,request).execute()
+            if (response.isSuccessful) {
+                flowOf(response.body())
+            } else {
+                flowOf(null)
+            }
+        } catch (e: Exception) {
             flowOf(null)
         }
     }

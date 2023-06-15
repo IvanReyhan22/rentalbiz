@@ -1,12 +1,11 @@
 package com.bangkit.rentalbiz.ui.screen.profile
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bangkit.rentalbiz.R
+import com.bangkit.rentalbiz.data.ProductRepository
 import com.bangkit.rentalbiz.data.UserCredentials
-import com.bangkit.rentalbiz.data.UserRepository
 import com.bangkit.rentalbiz.ui.common.UiState
 import com.bangkit.rentalbiz.utils.UserPreference
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileScreenViewModel @Inject constructor(
     private val context: Context,
+    private val productRepository: ProductRepository
 ) : ViewModel() {
     private val _uiState: MutableStateFlow<UiState<UserCredentials>> =
         MutableStateFlow(UiState.Idle)
@@ -41,8 +41,15 @@ class ProfileScreenViewModel @Inject constructor(
     }
 
     fun singOut(onSignOutComplete: () -> Unit) {
-        val userPreference = UserPreference(context)
-        userPreference.deleteAuthKey()
-        onSignOutComplete()
+        viewModelScope.launch {
+            val userPreference = UserPreference(context)
+
+            productRepository.deleteAllFavorite()
+            productRepository.deleteAllCartItem()
+            userPreference.deleteAddress()
+            userPreference.deleteAuthKey()
+
+            onSignOutComplete()
+        }
     }
 }

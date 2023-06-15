@@ -91,4 +91,7 @@
     <string name="pick_date">Pilih tanggal</string>
     <string name="payment_failed">Gagal melakukan pembayaran</string>
     <string name="history_empty">Anda belum melakukan transaksi</string>
+    <string name="address_label">Alamat</string>
+    <string name="address_name">Nama Alamat</string>
+    <string name="save">Simpan</string>
 </resources>

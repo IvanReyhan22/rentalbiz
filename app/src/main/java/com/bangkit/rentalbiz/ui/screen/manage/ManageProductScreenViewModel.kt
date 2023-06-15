@@ -2,13 +2,13 @@ package com.bangkit.rentalbiz.ui.screen.manage
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bangkit.rentalbiz.R
 import com.bangkit.rentalbiz.data.ProductRepository
+import com.bangkit.rentalbiz.data.remote.ProductRequest
 import com.bangkit.rentalbiz.data.remote.response.Product
 import com.bangkit.rentalbiz.ui.common.UiState
 import com.bangkit.rentalbiz.utils.Helper.uriToFile
@@ -157,20 +157,20 @@ class ManageProductScreenViewModel @Inject constructor(
         }
     }
 
-    fun updateProduct(onSuccess: () -> Unit, onFailed: () -> Unit){
+    fun updateProduct(id: String, onSuccess: () -> Unit, onFailed: () -> Unit) {
         _uiState.value = UiState.Loading
         viewModelScope.launch {
-            productRepository.createProduct(
-                image = uriToFile(_image.value, context),
-                name = _inventoryForm.value.name,
-                description = _inventoryForm.value.description,
-                price = _inventoryForm.value.price,
-                category = _inventoryForm.value.category,
-                requirement = _inventoryForm.value.requirenment,
-                stock = _inventoryForm.value.stock
-            ).collect { response ->
+            val request = ProductRequest(
+                nama = _inventoryForm.value.name,
+                deskripsi = _inventoryForm.value.description,
+                harga = _inventoryForm.value.price,
+                kategori = _inventoryForm.value.category,
+                persyaratan = _inventoryForm.value.requirenment,
+                stok = _inventoryForm.value.stock
+            )
+            productRepository.updateProduct(id, request).collect { response ->
                 when {
-                    response?.message != null -> {
+                    response?.success != null -> {
                         deleteImage()
                         onSuccess()
                     }
