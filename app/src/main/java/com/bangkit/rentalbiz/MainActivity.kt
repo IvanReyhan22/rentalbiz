@@ -2,7 +2,12 @@ package com.bangkit.rentalbiz
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +25,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     companion object {
-        const val CAMERA_X_RESULT = 200
 
         private val REQUIRED_PERMISSIONS =
             arrayOf(
@@ -73,7 +77,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             RentalBizTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
@@ -82,5 +85,18 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        val window: Window = window
+        setStatusBarColorToWhite(window)
+    }
+
+    private fun setStatusBarColorToWhite(window: Window) {
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.statusBarColor = Color.WHITE
+        window.navigationBarColor = Color.WHITE
+        window.navigationBarDividerColor = Color.GRAY
+        window.decorView.systemUiVisibility =
+            window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
     }
 }
+
