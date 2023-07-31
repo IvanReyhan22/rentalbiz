@@ -1,4 +1,4 @@
-![heading](/image/heading.png)
+![heading](/image/Heading.png)
 
 
 <h1 align="center">Capstone Project ~ RentalBiz App</h1>
