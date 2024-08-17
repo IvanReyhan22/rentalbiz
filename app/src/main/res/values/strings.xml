@@ -94,4 +94,5 @@
     <string name="address_label">Alamat</string>
     <string name="address_name">Nama Alamat</string>
     <string name="save">Simpan</string>
+    <string name="title_activity_auth">Auth</string>
 </resources>

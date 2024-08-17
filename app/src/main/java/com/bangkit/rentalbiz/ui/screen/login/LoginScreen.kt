@@ -1,7 +1,5 @@
 package com.bangkit.rentalbiz.ui.screen.login
 
-
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -37,9 +35,9 @@ import com.bangkit.rentalbiz.ui.theme.RentalBizTheme
 
 @Composable
 fun LoginScreen(
+    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: LoginScreenViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier,
 ) {
     val loginForm by viewModel.loginForm
     val uiState by viewModel.uiState.collectAsState()
@@ -76,13 +74,13 @@ fun LoginScreen(
 
 @Composable
 fun LoginContent(
+    modifier: Modifier = Modifier,
     loginForm: LoginForm,
     onEmailUpdate: (String) -> Unit,
     onPasswordUpdate: (String) -> Unit,
     uiState: UiState<Any> = UiState.Idle,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
@@ -98,10 +96,12 @@ fun LoginContent(
                 modifier = modifier.height(30.dp)
             )
         }
+
         ScreenHeading(
             title = stringResource(R.string.welcome),
             subTitle = stringResource(R.string.app_tagline)
         )
+
         Column {
             MyTextField(
                 label = "Email",

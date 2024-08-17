@@ -36,4 +36,6 @@ sealed class Screen(val route: String) {
     object Camera : Screen("camera_page/{productId}") {
         fun createRoute(productId: String) = "camera_page/$productId"
     }
+
+    object Auth : Screen("auth")
 }

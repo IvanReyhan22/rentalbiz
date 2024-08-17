@@ -1,5 +1,6 @@
 package com.bangkit.rentalbiz.ui.components.input
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,6 +20,7 @@ import com.bangkit.rentalbiz.ui.theme.*
 
 @Composable
 fun MyTextField(
+    modifier: Modifier = Modifier,
     value: String,
     placeholder: String = "",
     onValueChange: (String) -> Unit,
@@ -31,7 +33,6 @@ fun MyTextField(
     isPassword: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -60,6 +61,7 @@ fun MyTextField(
             placeholder = {
                 Paragraph(title = placeholder, type = ParagraphType.MEDIUM, color = Neutral500)
             },
+            isError = false,
             readOnly = readOnly,
             leadingIcon = leadingIcon,
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
@@ -90,7 +92,9 @@ fun MyTextField(
 fun MyTextFieldPreview(
 ) {
     RentalBizTheme {
-        Column {
+        Column(
+            modifier = Modifier.padding(all = 32.dp)
+        ) {
             MyTextField(value = "", onValueChange = {})
             Spacer(modifier = Modifier.height(AppTheme.dimens.spacing_24))
             MyTextField(value = "", onValueChange = {}, label = "Email")

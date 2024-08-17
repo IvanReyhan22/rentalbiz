@@ -73,7 +73,7 @@ class LoginScreenViewModel @Inject constructor(
             val loginRequest = LoginRequest(
                 email = _loginForm.value.email,
                 password = _loginForm.value.password
-            )
+                )
             userRepository.login(loginRequest).collect { response ->
                 when {
                     response?.error?.contains(
@@ -112,6 +112,7 @@ class LoginScreenViewModel @Inject constructor(
     private fun saveAuthKey(userCredentials: UserCredentials) {
         val userPreference = UserPreference(context)
         userPreference.setAuthKey(userCredentials)
+
     }
 
     private fun setLoading() {

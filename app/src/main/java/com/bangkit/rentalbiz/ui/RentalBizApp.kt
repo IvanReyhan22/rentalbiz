@@ -6,12 +6,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Scaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +32,7 @@ import com.bangkit.rentalbiz.ui.navigation.NavigationItem
 import com.bangkit.rentalbiz.ui.navigation.Screen
 import com.bangkit.rentalbiz.ui.screen.GreetingScreen
 import com.bangkit.rentalbiz.ui.screen.OnBoardingScreen
+import com.bangkit.rentalbiz.ui.screen.auth.AuthScreen
 import com.bangkit.rentalbiz.ui.screen.camera.CameraScreen
 import com.bangkit.rentalbiz.ui.screen.cart.CartScreen
 import com.bangkit.rentalbiz.ui.screen.checkout.CheckOutScreen
@@ -53,6 +54,7 @@ import com.bangkit.rentalbiz.ui.theme.Primary400
 import com.bangkit.rentalbiz.ui.theme.Shades0
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RentalBizApp(
     modifier: Modifier = Modifier,
@@ -82,17 +84,20 @@ fun RentalBizApp(
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = if (isFirstTime) Screen.OnBoarding.route else Screen.Login.route,
+            startDestination = if (isFirstTime) Screen.Auth.route else Screen.Login.route,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(Screen.OnBoarding.route) {
-                OnBoardingScreen(navController = navController)
-            }
             composable(Screen.Login.route) {
                 LoginScreen(navController = navController)
             }
+            composable(Screen.OnBoarding.route) {
+                OnBoardingScreen(navController = navController)
+            }
             composable(Screen.Register.route) {
                 RegisterScreen(navController = navController)
+            }
+            composable(route=Screen.Auth.route){
+                AuthScreen(navController = navController)
             }
             composable(Screen.Greeting.route) {
                 GreetingScreen(navController = navController)
@@ -213,7 +218,10 @@ private fun BottomBar(
         ),
     )
 
-    BottomNavigation(modifier = modifier, backgroundColor = Shades0) {
+    BottomNavigation(
+        modifier = modifier,
+        backgroundColor = Shades0,
+        ) {
         navigationItems.map { item ->
             BottomNavigationItem(
                 icon = {
